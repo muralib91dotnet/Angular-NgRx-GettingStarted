@@ -3,6 +3,7 @@ import { NgForm } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 
 import { AuthService } from './auth.service';
+import { Store, select } from '@ngrx/store';
 
 @Component({
   templateUrl: './login.component.html',
@@ -15,19 +16,33 @@ export class LoginComponent implements OnInit {
   maskUserName: boolean;
 
   constructor(private authService: AuthService,
-              private router: Router) {
+              private router: Router, private store: Store<any>) {
   }
 
   ngOnInit(): void {
+    this.store.pipe(select('user')).subscribe(
+      userDetail=>{
+        //DEMO TODO: check how to ng-bind as angular form obj value
+        // if(userDetail)
+        // loginForm.form.value.userName;
+      }
+    )
 
   }
-
+  
   cancel(): void {
     this.router.navigate(['welcome']);
   }
 
   checkChanged(value: boolean): void {
     this.maskUserName = value;
+    this.store.dispatch(
+      {
+        type:'MASK_USER_NAME',
+        payload: value
+
+      }
+    )
   }
 
   login(loginForm: NgForm): void {
@@ -35,6 +50,13 @@ export class LoginComponent implements OnInit {
       const userName = loginForm.form.value.userName;
       const password = loginForm.form.value.password;
       this.authService.login(userName, password);
+
+      this.store.dispatch(
+        {
+          type:'LOGIN_ACTION',
+          payload: {userName: userName, passWord:password}  
+        }
+      )
 
       if (this.authService.redirectUrl) {
         this.router.navigateByUrl(this.authService.redirectUrl);
