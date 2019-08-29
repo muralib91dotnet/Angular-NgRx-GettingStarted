@@ -1,0 +1,4 @@
+Developer Tools & Debugging - Redux:
+1. Install Redux dev-tools chrome extension
+2. npm install @ngrx/store-devtools pkg
+3. Then initialize StoreDevtoolsModule in App module, i.e. all code changes as of this commit
