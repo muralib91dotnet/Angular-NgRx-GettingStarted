@@ -4,6 +4,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 
 import { AuthService } from './auth.service';
 import { Store, select } from '@ngrx/store';
+import * as fromUser from './state/user.reducer';
 
 @Component({
   templateUrl: './login.component.html',
@@ -20,11 +21,12 @@ export class LoginComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.store.pipe(select('user')).subscribe(
-      userDetail=>{
+    this.store.pipe(select(fromUser.getMaskUserName)).subscribe(
+      userMaskState=>{
         //DEMO TODO: check how to ng-bind as angular form obj value
         // if(userDetail)
         // loginForm.form.value.userName;
+        this.maskUserName=userMaskState;
       }
     )
 
