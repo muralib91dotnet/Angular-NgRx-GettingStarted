@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
-import { Subscription } from 'rxjs';
+// import { Subscription } from 'rxjs';
 
 import { Product } from '../product';
 import { ProductService } from '../product.service';
@@ -22,7 +22,7 @@ export class ProductEditComponent implements OnInit, OnDestroy {
   productForm: FormGroup;
 
   product: Product | null;
-  sub: Subscription;
+  // sub: Subscription;
 
   // Use with the generic validation message class
   displayMessage: { [key: string]: string } = {};

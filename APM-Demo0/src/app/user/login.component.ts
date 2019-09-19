@@ -5,6 +5,8 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from './auth.service';
 import { Store, select } from '@ngrx/store';
 import * as fromUser from './state/user.reducer';
+import * as userActions from './state/user.action';
+import { ToggleMaskUserName } from './state/user.action';
 
 @Component({
   templateUrl: './login.component.html',
@@ -31,7 +33,7 @@ export class LoginComponent implements OnInit {
     )
 
   }
-  
+
   cancel(): void {
     this.router.navigate(['welcome']);
   }
@@ -39,11 +41,7 @@ export class LoginComponent implements OnInit {
   checkChanged(value: boolean): void {
     this.maskUserName = value;
     this.store.dispatch(
-      {
-        type:'MASK_USER_NAME',
-        payload: value
-
-      }
+      new userActions.ToggleMaskUserName(value)
     )
   }
 
@@ -56,7 +54,7 @@ export class LoginComponent implements OnInit {
       this.store.dispatch(
         {
           type:'LOGIN_ACTION',
-          payload: {userName: userName, passWord:password}  
+          payload: {userName: userName, passWord:password}
         }
       )
 
