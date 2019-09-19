@@ -4,7 +4,8 @@ import { Actions, Effect, ofType} from '@ngrx/effects';
 import * as productActions from './product.actions';
 import { mergeMap, map, catchError } from 'rxjs/operators';
 import { Product } from '../product';
-import { of } from 'rxjs';
+import { of, Observable } from 'rxjs';
+import { Action } from '@ngrx/store';
 @Injectable()
 export class ProductEffects{
   constructor(private actions$:Actions, private productService: ProductService){
@@ -13,12 +14,14 @@ export class ProductEffects{
 
 
   @Effect()
-  loadProduct$=this.actions$.pipe(
+  //listening to all actions
+  loadProduct$: Observable<Action>=this.actions$.pipe(
+    //filtering load product action, dispatched from any of the view components
     ofType(productActions.ProductActionTypes.LoadProduct),
 
-    mergeMap((actions:productActions.LoadProduct) =>
+    mergeMap((action:productActions.LoadProduct) =>
       this.productService.getProducts().pipe(
-        map((products:Product[]) => {new productActions.LoadProductSuccess(products)}),
+        map((products:Product[]) => new productActions.LoadProductSuccess(products)),
         catchError(err => of(new productActions.LoadProductFail(err)))
       )
     )

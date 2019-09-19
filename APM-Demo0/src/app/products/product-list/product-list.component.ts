@@ -40,10 +40,23 @@ export class ProductListComponent implements OnInit, OnDestroy {
       }
     );
 
-    this.productService.getProducts().subscribe(
-      (products: Product[]) => this.products = products,
-      (err: any) => this.errorMessage = err.error
-    );
+    //dispatch an action to fire the getProducts http api call
+    //this action observed by the product effect
+    this.store.dispatch(new productActions.LoadProduct());
+
+    //listening to getProducts selector
+    this.store.pipe(select(fromProduct.getProducts))
+    .subscribe((products:Product[])=>{
+      this.products=products;
+    })
+    //above pair of store calls to fire & observe http api call responese,
+    //which replaces the typical single http observable, in the alternate commented below
+
+    //OR
+    // this.productService.getProducts().subscribe(
+    //   (products: Product[]) => this.products = products,
+    //   (err: any) => this.errorMessage = err.error
+    // );
 
     //TODO: Unsubscribe
     this.store.pipe(select(fromProduct.getShowProductCode)).subscribe(
