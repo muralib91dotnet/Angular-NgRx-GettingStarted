@@ -13,12 +13,14 @@ export interface ProductState{
     showProductCode: boolean;
     currentProduct: Product;
     products: Product[];
+    error:string;
 }
 
 const initialState: ProductState={
     showProductCode:true,
     currentProduct:null,
-    products:[]
+    products:[],
+    error:''
 };
 
 //selector to get slice of product('products') state, from entire app state
@@ -41,6 +43,12 @@ export const getProducts=createSelector(
     getProductFeatureState,
     //projector function: gets result of selector function
     state=>state.products
+);
+
+export const getError=createSelector(
+  getProductFeatureState,
+  //projector function: gets result of selector function
+  state=>state.error
 );
 
 export function reducer(state: ProductState=initialState, action:ProductActions):ProductState{
@@ -81,7 +89,15 @@ export function reducer(state: ProductState=initialState, action:ProductActions)
         case ProductActionTypes.LoadProductSuccess:
           return {
             ...state,
-            products:action.payload
+            products:action.payload,
+            error:''
+          }
+
+        case ProductActionTypes.LoadProductFail:
+          return {
+            ...state,
+            products:[],
+            error:action.payload
           }
 
         default:
