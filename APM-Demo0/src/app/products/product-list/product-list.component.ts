@@ -7,6 +7,8 @@ import { ProductService } from '../product.service';
 import { Store, select } from '@ngrx/store';
 import * as fromProduct from '../state/product.reducer';
 import * as productActions from '../state/product.actions';
+import { takeWhile } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'pm-product-list',
@@ -23,6 +25,8 @@ export class ProductListComponent implements OnInit, OnDestroy {
 
   // Used to highlight the selected product in the list
   selectedProduct: Product | null;
+  componentActive: boolean=true;
+  products$: Observable<Product[]>;
   // sub: Subscription;
 
   constructor(private store: Store<fromProduct.State>,
@@ -34,7 +38,9 @@ export class ProductListComponent implements OnInit, OnDestroy {
     // );
 
     //TODO: Unsubscribe
-    this.store.pipe(select(fromProduct.getCurrentProduct)).subscribe(
+    this.store.pipe(select(fromProduct.getCurrentProduct),
+    takeWhile(()=>this.componentActive)
+    ).subscribe(
       currentProduct=>{
         this.selectedProduct=currentProduct
       }
@@ -45,10 +51,10 @@ export class ProductListComponent implements OnInit, OnDestroy {
     this.store.dispatch(new productActions.LoadProduct());
 
     //listening to getProducts selector
-    this.store.pipe(select(fromProduct.getProducts))
-    .subscribe((products:Product[])=>{
-      this.products=products;
-    })
+    this.products$=this.store.pipe(select(fromProduct.getProducts));
+    // .subscribe((products:Product[])=>{
+    //   this.products=products;
+    // })
     //above pair of store calls to fire & observe http api call responese,
     //which replaces the typical single http observable, in the alternate commented below
 
@@ -68,6 +74,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     // this.sub.unsubscribe();
+    this.componentActive=false;
   }
 
   checkChanged(value: boolean): void {
