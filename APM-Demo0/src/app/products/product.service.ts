@@ -10,7 +10,7 @@ import { Product } from './product';
   providedIn: 'root',
 })
 export class ProductService {
-  private productsUrl = 'api/productszz';
+  private productsUrl = 'api/products';
   // private products: Product[];
 
   //Broadcast using BehaviourSubject & Observable

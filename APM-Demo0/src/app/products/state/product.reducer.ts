@@ -2,6 +2,8 @@ import * as fromRoot from '../../state/app.state';
 import { Product } from '../product';
 import { createFeatureSelector, createSelector } from '@ngrx/store';
 import { ProductActionTypes, ProductActions } from './product.actions';
+import { act } from '@ngrx/effects';
+import { error } from '@angular/compiler/src/util';
 
 //Root App's state inherited and then product state added to it
 //This is done, since Products module is lazy loaded AND product state removed from root app state interface
@@ -11,14 +13,14 @@ export interface State extends fromRoot.State{
 
 export interface ProductState{
     showProductCode: boolean;
-    currentProduct: Product;
+    currentProductId: number | null;
     products: Product[];
     error:string;
 }
 
 const initialState: ProductState={
     showProductCode:true,
-    currentProduct:null,
+    currentProductId: null,
     products:[],
     error:''
 };
@@ -33,10 +35,28 @@ export const getShowProductCode=createSelector(
     state=>state.showProductCode
 );
 
+export const getCurrentProductId = createSelector(
+    getProductFeatureState,
+    state => state.currentProductId
+);
+
 export const getCurrentProduct=createSelector(
     getProductFeatureState,
     //projector function: gets result of selector function
-    state=>state.currentProduct
+    getCurrentProductId,
+    (state, currentProductId) => {
+        if (currentProductId === 0) {
+          return {
+            id: 0,
+            productName: '',
+            productCode: 'New',
+            description: '',
+            starRating: 0
+          };
+        } else {
+          return currentProductId ? state.products.find(p => p.id === currentProductId) : null;
+        }
+      }
 );
 
 export const getProducts=createSelector(
@@ -65,25 +85,19 @@ export function reducer(state: ProductState=initialState, action:ProductActions)
         case ProductActionTypes.InitializeCurrentProduct:
             return{
                 ...state,
-                currentProduct:{
-                    id: 0,
-                    productName: '',
-                    productCode: 'NEW',
-                    description: '',
-                    starRating: 0
-                }
+                currentProductId:0
             };
 
         case ProductActionTypes.SetCurrentProduct:
             return {
                 ...state,
-                currentProduct:{...action.payload}
+                currentProductId:action.payload.id
             };
 
         case ProductActionTypes.ClearCurrentProduct:
             return {
                 ...state,
-                currentProduct:null
+                currentProductId:null
             };
 
         case ProductActionTypes.LoadProductSuccess:
@@ -99,6 +113,21 @@ export function reducer(state: ProductState=initialState, action:ProductActions)
             products:[],
             error:action.payload
           }
+
+        case ProductActionTypes.UpdateProductSuccess:
+            const updatedProducts=state.products.map(item=>item.id===action.payload.id?action.payload:item)
+            return {
+                ...state,
+                products:updatedProducts,
+                currentProductId:action.payload.id,
+                error:''
+            }
+
+        case ProductActionTypes.UpdateProductFail:
+                return {
+                    ...state,
+                    error:action.payload
+                }
 
         default:
             return state;
