@@ -27,5 +27,18 @@ export class ProductEffects{
     )
   );
 
+  @Effect()
+    //listening to all actions
+    updateProduct$: Observable<Action>=this.actions$.pipe(
+      //filtering load product action, dispatched from any of the view components
+      ofType(productActions.ProductActionTypes.UpdateProduct),
+      map((action:productActions.UpdateProduct)=>action.payload),
+      mergeMap((product:Product) =>
+        this.productService.updateProduct(product).pipe(
+          map(updatedProduct => new productActions.UpdateProductSuccess(updatedProduct)),
+          catchError(err => of(new productActions.LoadProductFail(err)))
+        )
+      )
+    );
 
 }
