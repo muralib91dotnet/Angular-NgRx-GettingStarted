@@ -1,33 +1,31 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 // import { Subscription } from 'rxjs';
 
-import { Product } from '../product';
-import { ProductService } from '../product.service';
+import { Product } from '../../product';
+import { ProductService } from '../../product.service';
 import { Store, select } from '@ngrx/store';
-import * as fromProduct from '../state/product.reducer';
-import * as productActions from '../state/product.actions';
+import * as fromProduct from '../../state/product.reducer';
+import * as productActions from '../../state/product.actions';
 import { takeWhile } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 
 @Component({
-  selector: 'pm-product-list',
-  templateUrl: './product-list.component.html',
-  styleUrls: ['./product-list.component.css']
+    templateUrl: './product-shell.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ProductListComponent implements OnInit, OnDestroy {
-  pageTitle = 'Products';
-  errorMessage: string;
+export class ProductShellComponent implements OnInit {
 
-  displayCode: boolean;
+  errorMessage$: Observable<string>;
 
-  products: Product[];
+  displayCode$: Observable<boolean>;
+
+  // products: Product[];
 
   // Used to highlight the selected product in the list
-  selectedProduct: Product | null;
-  componentActive: boolean=true;
+  selectedProduct$: Observable<Product>;
+  // componentActive: boolean=true;
   products$: Observable<Product[]>;
-  errorMessage$: Observable<string>;
+  // errorMessage$: Observable<string>;
   // sub: Subscription;
 
   constructor(private store: Store<fromProduct.State>,
@@ -37,25 +35,17 @@ export class ProductListComponent implements OnInit, OnDestroy {
     // this.sub = this.productService.selectedProductChanges$.subscribe(
     //   selectedProduct => this.selectedProduct = selectedProduct
     // );
-
-    //TODO: Unsubscribe
-    this.store.pipe(select(fromProduct.getCurrentProduct),
-    takeWhile(()=>this.componentActive)
-    ).subscribe(
-      currentProduct=>{
-        this.selectedProduct=currentProduct
-      }
-    );
-
-    //Listen for errors
-    this.errorMessage$=this.store.pipe(select(fromProduct.getError));
-
-    //dispatch an action to fire the getProducts http api call
-    //this action observed by the product effect
+    //OR    
     this.store.dispatch(new productActions.LoadProduct());
 
-    //listening to getProducts selector
-    this.products$=this.store.pipe(select(fromProduct.getProducts));
+    this.products$=this.store.pipe(select(fromProduct.getProducts)) as Observable<Product[]>;
+
+    this.errorMessage$=this.store.pipe(select(fromProduct.getError));
+
+    this.selectedProduct$=this.store.pipe(select(fromProduct.getCurrentProduct));
+
+    this.displayCode$=this.store.pipe(select(fromProduct.getShowProductCode));
+ 
     // .subscribe((products:Product[])=>{
     //   this.products=products;
     // })
@@ -68,21 +58,11 @@ export class ProductListComponent implements OnInit, OnDestroy {
     //   (err: any) => this.errorMessage = err.error
     // );
 
-    //TODO: Unsubscribe
-    this.store.pipe(select(fromProduct.getShowProductCode)).subscribe(
-      productCode=>{
-        this.displayCode=productCode
-      }
-    )
   }
 
-  ngOnDestroy(): void {
-    // this.sub.unsubscribe();
-    this.componentActive=false;
-  }
 
   checkChanged(value: boolean): void {
-    this.displayCode = value;
+    // this.displayCode = value;
 
     this.store.dispatch(new productActions.ToggleProductCode(value));
 
@@ -97,5 +77,6 @@ export class ProductListComponent implements OnInit, OnDestroy {
     // this.productService.changeSelectedProduct(product);
     this.store.dispatch(new productActions.SetCurrentProduct(product));
   }
+
 
 }
